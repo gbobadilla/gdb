@@ -1,0 +1,153 @@
+#Functions to examine or print PL1 data
+#
+
+################PRINT FUNCTIONS################
+define pchr
+ #EXAMINE CHAR 
+ #Use strlen c function to get CHAR length
+ set logging redirect on
+ call strlen(&$arg0)
+ set $strlen=$
+ set logging redirect off
+ p *((char *)&$arg0)@$strlen
+end
+
+define ptrchr
+ #EXAMINE POINTER TO A CHAR 
+ #Use strlen c function to get CHAR length
+ set logging redirect on
+ call strlen($arg0)
+ set $strlen=$
+ set logging redirect off
+ p *($arg0)@$strlen
+end
+
+define pvchr
+ #EXAMINE VARYING CHAR
+ #Varying chars save lenght in first two characters
+ set logging redirect on
+ call (int) ((char*)&$arg0)[1] 
+ set $strlen=$
+ set logging redirect off
+ if $strlen != 0
+  p *((char *)&$arg0+2)@$strlen
+ else
+  print ""
+ end
+end
+
+define ptrvchr
+ #EXAMINE POINTER TO VARYING CHAR
+ #Varying chars save lenght in first two characters
+ set logging redirect on
+ call (int) ((char*)$arg0)[1] 
+ set $strlen=$
+ set logging redirect off
+ if $strlen != 0
+  p *(((char*)$arg0)+2)@$strlen
+  #p *($arg0+2)@$strlen
+ else
+  print ""
+ end
+end
+
+define p15
+ #EXAMINE FIXED BINARY 15 
+ print (short) $arg0
+end
+
+define ptr15
+ #EXAMINE POINTER TO FIXED BINARY 15 
+ x /dh $arg0
+end
+
+define p31
+ #EXAMINE FIXED BINARY 31 DATA TYPE
+ print (long) $arg0
+end
+
+define ptr31
+ #EXAMINE POINTER TO FIXED BINARY 31 
+ x /dw $arg0
+end
+
+define p52
+ #EXAMINE FLOAT BINARY 52
+ print (double) $arg0
+end
+
+define ptr52
+ #EXAMINE POINTER TO FLOAT BINARY 52
+ x /fg $arg0
+end
+
+define pbit
+ #EXAMINE BIT 
+ x /t &$arg0
+end
+
+#######################WATCHPOINT FUNCTIONS#######################
+define wp15
+ #SET WATCHPOINT FOR FIXED BINARY 15
+ watch *(short *)&$arg0
+end
+
+define wp31
+ #SET WATCHPOINT FOR FIXED BINARY 31 
+ watch *(long *)&$arg0
+end
+
+define wp52
+ #SET WATCHPOINT FOR FLOAT BINARY 52 
+ watch *(double *)&$arg0
+end
+
+define wpchr
+ #SET WATCHPOINT FOR CHAR 
+ #PASS VARIABLE SIZE
+ watch *((char *)&$arg0)@$arg1
+end
+
+define wpchr2
+ #SET WATCHPOINT FOR CHAR 
+ set logging redirect on
+ call strlen(&$arg0)
+ set $strlen=$
+ set logging redirect off
+ watch *((char *)&$arg0)@$strlen
+end
+
+define wpvchr
+ #SET WATCHPOINT FOR VARYING CHAR 
+ #PASS VARIABLE SIZE
+ watch *((char *)&$arg0+2)@$arg1
+end
+
+define wpvchr2
+ #SET WATCHPOINT FOR VARYING CHAR 
+ set logging redirect on
+ call (int) ((char*)&$arg0)[1] 
+ set $strlen=$
+ set logging redirect off
+ if $strlen != 0
+  watch *((char *)&$arg0+2)@$strlen
+ end
+end
+
+#Initialize EXTARNAL STRUCTS example ACCOUNT or POSTEDITRECORD
+define init 
+ !ksh /SYM/TEST/gbobadil/bin/gdbassist -INIT $arg0
+ source dbtmp 
+end
+
+#Set break point(s) when gdbatm starts gdb session
+define setbp 
+ source dbtmp 
+end
+
+#Convert proc name to lower and then sets break point.
+#If a line is passed instead of a string it will also work.
+define bat
+ !ksh /SYM/TEST/gbobadil/bin/gdbassist -BREAKAT $arg0
+ source dbtmp 
+end
